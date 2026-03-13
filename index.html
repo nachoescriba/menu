@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>miMenú Familiar</title>
+  <title>🥘 miMenú Familiar</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -18,57 +19,77 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useReducer, useEffect, useCallback, useState } = React;
+const { useReducer, useEffect, useState } = React;
 
 const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-const COMIDAS = ["Almuerzo","Comida","Merienda"];
+const DIAS_SHORT = [["L","Lunes"],["M","Martes"],["X","Miércoles"],["J","Jueves"],["V","Viernes"]];
+const COMIDAS_BASE = ["Almuerzo","Comida","Merienda"];
 const CENA_SLOTS = ["Cena Niños","Cena Padres"];
-const ALL_SLOTS = [...COMIDAS, ...CENA_SLOTS];
+const ALL_SLOTS = [...COMIDAS_BASE,...CENA_SLOTS];
 const CATEGORIAS = ["Proteínas","Verduras","Cereales/Pasta","Frutas","Lácteos","Legumbres","Otros"];
 const TIPOS_RECETA = ["Almuerzo","Comida","Merienda","Cena Niños","Cena Padres"];
+const FILAS = [["A","Almuerzo","#10b981"],["C","Comida","#3b82f6"],["M","Merienda","#a78bfa"],["Ce N","Cena Niños","#f59e0b"],["Ce P","Cena Padres","#f87171"]];
+const COLOR = { Almuerzo:"#10b981",Comida:"#3b82f6",Merienda:"#a78bfa","Cena Niños":"#f59e0b","Cena Padres":"#f87171" };
+const EMOJI  = { Almuerzo:"🥗",Comida:"🍽️",Merienda:"🍎","Cena Niños":"👶","Cena Padres":"🍷" };
+
+const BATMAN_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#0a0a0f"/><ellipse cx="120" cy="195" rx="68" ry="55" fill="#2a2a3a"/><path d="M95 183 Q105 173 120 177 Q135 173 145 183 Q138 189 130 185 Q125 193 120 191 Q115 193 110 185 Q102 189 95 183Z" fill="#1a1a1a"/><ellipse cx="105" cy="180" rx="8" ry="5" fill="#1a1a1a"/><ellipse cx="135" cy="180" rx="8" ry="5" fill="#1a1a1a"/><rect x="110" y="152" width="20" height="18" rx="4" fill="#b0a090"/><ellipse cx="120" cy="133" rx="32" ry="34" fill="#b0a090"/><path d="M90 127 Q92 105 120 103 Q148 105 150 127 Q148 123 142 121 Q136 115 130 119 Q125 113 120 113 Q115 113 110 119 Q104 115 98 121 Q92 123 90 127Z" fill="#111"/><polygon points="98,113 88,83 108,105" fill="#111"/><polygon points="142,113 152,83 132,105" fill="#111"/><ellipse cx="108" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="132" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="108" cy="125" rx="5" ry="4" fill="#ddd"/><ellipse cx="132" cy="125" rx="5" ry="4" fill="#ddd"/><path d="M118 135 Q120 139 122 135" fill="none" stroke="#8a7060" stroke-width="1.5"/><path d="M110 143 Q115 140 120 142 Q125 140 130 143" fill="none" stroke="#8a7060" stroke-width="2" stroke-linecap="round"/><path d="M98 130 Q98 145 120 151 Q142 145 142 130" fill="#b0a090"/><path d="M52 240 Q70 205 98 175 Q100 205 105 235Z" fill="#1c1c2e"/><path d="M188 240 Q170 205 142 175 Q140 205 135 235Z" fill="#1c1c2e"/></svg>`)}`;
+
+const WW_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#1a0a0a"/><ellipse cx="120" cy="197" rx="65" ry="52" fill="#8b1a1a"/><path d="M95 175 Q120 165 145 175 L140 200 Q120 193 100 200Z" fill="#c8960c"/><rect x="110" y="152" width="20" height="16" rx="3" fill="#d4a574"/><ellipse cx="120" cy="132" rx="31" ry="33" fill="#d4a574"/><path d="M90 120 Q88 145 92 185 Q100 175 102 155 Q104 135 102 120Z" fill="#1a0a00"/><path d="M150 120 Q152 145 148 185 Q140 175 138 155 Q136 135 138 120Z" fill="#1a0a00"/><ellipse cx="120" cy="108" rx="32" ry="14" fill="#1a0a00"/><path d="M92 117 Q120 110 148 117 Q140 121 120 119 Q100 121 92 117Z" fill="#c8960c"/><ellipse cx="108" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="132" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="108" cy="125" rx="4" ry="3" fill="#1a0a00"/><ellipse cx="132" cy="125" rx="4" ry="3" fill="#1a0a00"/><circle cx="110" cy="123" r="1.5" fill="white"/><circle cx="134" cy="123" r="1.5" fill="white"/><path d="M101 119 Q108 116 115 118" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M125 118 Q132 116 139 119" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M118 132 Q120 136 122 132" fill="none" stroke="#b8845a" stroke-width="1.2"/><path d="M110 141 Q115 137 120 139 Q125 137 130 141 Q125 145 120 143 Q115 145 110 141Z" fill="#cc2200"/><path d="M78 180 Q90 170 100 180 Q92 187 80 185Z" fill="#c8960c"/><path d="M162 180 Q150 170 140 180 Q148 187 160 185Z" fill="#c8960c"/></svg>`)}`;
+
 const USUARIOS = [
-  { id:"nacho",  nombre:"Nacho", emoji:"👨", color:"#3b82f6" },
-  { id:"irene",  nombre:"Irene", emoji:"👩", color:"#ec4899" },
+  { id:"nacho", nombre:"Nacho", avatar:BATMAN_SVG, color:"#3b82f6" },
+  { id:"irene", nombre:"Irene", avatar:WW_SVG,    color:"#ec4899" },
 ];
 
-const COLOR = { Almuerzo:"#10b981", Comida:"#3b82f6", Merienda:"#a78bfa", "Cena Niños":"#f59e0b", "Cena Padres":"#f87171" };
-const EMOJI = { Almuerzo:"🥗", Comida:"🍽️", Merienda:"🍎", "Cena Niños":"👶", "Cena Padres":"🍷" };
+const LS = "mimenufamiliar-v5";
+function load() { try { return JSON.parse(localStorage.getItem(LS))||{}; } catch { return {}; } }
+function save(d) { try { localStorage.setItem(LS,JSON.stringify(d)); } catch {} }
 
-// ── Persistencia local (localStorage) ─────────────────────────────────────────
-const LS_KEY = "mimenufamiliar-data";
-function loadData() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || { recetas:[], menu:{}, compra:[] }; }
-  catch { return { recetas:[], menu:{}, compra:[] }; }
-}
-function saveData(recetas, menu, compra) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify({ recetas, menu, compra })); } catch {}
-}
-
-// ── Estado / reducer ──────────────────────────────────────────────────────────
-const stored = loadData();
+const stored = load();
 const init = {
-  tab:"menu", menu: stored.menu, recetas: stored.recetas, compra: stored.compra,
+  tab:"menu", menu:stored.menu||{}, recetas:stored.recetas||[],
+  compra:stored.compra||[], cenasIguales:stored.cenasIguales||{},
   modalOpen:false, modalSlot:null,
-  recetaForm:{ nombre:"", tipo:"Comida", ingredientes:[], categoria:"Otros", calorias:"" },
+  recetaForm:{ nombre:"",tipo:"Comida",ingredientes:[],categoria:"Otros",calorias:"" },
   ingInput:"", aiLoading:false, aiSugerencia:"", usuario:null,
 };
 
-function reducer(s, a) {
+function reducer(s,a) {
   switch(a.type) {
-    case "TAB":        return {...s, tab:a.tab};
-    case "SET_USER":   return {...s, usuario:a.val};
-    case "OPEN_MODAL": return {...s, modalOpen:true, modalSlot:a.slot};
-    case "CLOSE_MODAL":return {...s, modalOpen:false, modalSlot:null};
-    case "ASSIGN":     return {...s, menu:{...s.menu,[`${a.dia}-${a.comida}`]:a.receta}, modalOpen:false, modalSlot:null};
-    case "REMOVE":     { const m={...s.menu}; delete m[`${a.dia}-${a.comida}`]; return {...s,menu:m}; }
-    case "RF":         return {...s, recetaForm:{...s.recetaForm,...a.data}};
-    case "ING_IN":     return {...s, ingInput:a.val};
-    case "ADD_ING":    { const v=s.ingInput.trim(); if(!v) return s; return {...s, recetaForm:{...s.recetaForm, ingredientes:[...s.recetaForm.ingredientes,v]}, ingInput:""}; }
-    case "DEL_ING":    return {...s, recetaForm:{...s.recetaForm, ingredientes:s.recetaForm.ingredientes.filter((_,i)=>i!==a.idx)}};
-    case "SAVE_R":     {
+    case "TAB":         return {...s,tab:a.tab};
+    case "SET_USER":    return {...s,usuario:a.val};
+    case "OPEN_MODAL":  return {...s,modalOpen:true,modalSlot:a.slot};
+    case "CLOSE_MODAL": return {...s,modalOpen:false,modalSlot:null};
+    case "ASSIGN": {
+      const menu={...s.menu,[`${a.dia}-${a.comida}`]:a.receta};
+      if(s.cenasIguales[a.dia]){
+        if(a.comida==="Cena Niños")  menu[`${a.dia}-Cena Padres`]=a.receta;
+        if(a.comida==="Cena Padres") menu[`${a.dia}-Cena Niños`]=a.receta;
+      }
+      return {...s,menu,modalOpen:false,modalSlot:null};
+    }
+    case "REMOVE": {
+      const menu={...s.menu}; delete menu[`${a.dia}-${a.comida}`];
+      if(s.cenasIguales[a.dia]){
+        if(a.comida==="Cena Niños")  delete menu[`${a.dia}-Cena Padres`];
+        if(a.comida==="Cena Padres") delete menu[`${a.dia}-Cena Niños`];
+      }
+      return {...s,menu};
+    }
+    case "TOGGLE_CI": {
+      const ci={...s.cenasIguales,[a.dia]:!s.cenasIguales[a.dia]};
+      const menu={...s.menu};
+      if(ci[a.dia]&&menu[`${a.dia}-Cena Niños`]) menu[`${a.dia}-Cena Padres`]=menu[`${a.dia}-Cena Niños`];
+      return {...s,cenasIguales:ci,menu};
+    }
+    case "RF":      return {...s,recetaForm:{...s.recetaForm,...a.data}};
+    case "ING_IN":  return {...s,ingInput:a.val};
+    case "ADD_ING": { const v=s.ingInput.trim(); if(!v) return s; return {...s,recetaForm:{...s.recetaForm,ingredientes:[...s.recetaForm.ingredientes,v]},ingInput:""}; }
+    case "DEL_ING": return {...s,recetaForm:{...s.recetaForm,ingredientes:s.recetaForm.ingredientes.filter((_,i)=>i!==a.idx)}};
+    case "SAVE_R": {
       if(!s.recetaForm.nombre) return s;
-      const r={...s.recetaForm, id:Date.now(), autor:s.usuario?.id, autorNombre:s.usuario?.nombre};
-      return {...s, recetas:[...s.recetas,r], recetaForm:{nombre:"",tipo:"Comida",ingredientes:[],categoria:"Otros",calorias:""}, ingInput:""};
+      const r={...s.recetaForm,id:Date.now(),autor:s.usuario?.id,autorNombre:s.usuario?.nombre};
+      return {...s,recetas:[...s.recetas,r],recetaForm:{nombre:"",tipo:"Comida",ingredientes:[],categoria:"Otros",calorias:""},ingInput:""};
     }
     case "DEL_R": {
       const recetas=s.recetas.filter(r=>r.id!==a.id);
@@ -77,18 +98,19 @@ function reducer(s, a) {
     }
     case "GEN_COMPRA": {
       const map={};
-      Object.values(s.menu).forEach(r=>{ if(!r) return; r.ingredientes.forEach(ing=>{map[ing]=(map[ing]||0)+1;}); });
-      return {...s, compra:Object.entries(map).map(([ing,n])=>({ing,n,checked:false})), tab:"compra"};
+      Object.values(s.menu).forEach(r=>{if(!r) return; r.ingredientes.forEach(ing=>{map[ing]=(map[ing]||0)+1;});});
+      return {...s,compra:Object.entries(map).map(([ing,n])=>({ing,n,checked:false})),tab:"compra"};
     }
-    case "TOGGLE_C":  return {...s, compra:s.compra.map((c,i)=>i===a.idx?{...c,checked:!c.checked}:c)};
-    case "AI_LOAD":   return {...s, aiLoading:a.val};
-    case "AI_SUGE":   return {...s, aiSugerencia:a.val};
-    case "APPLY_AI":  {
+    case "TOGGLE_C": return {...s,compra:s.compra.map((c,i)=>i===a.idx?{...c,checked:!c.checked}:c)};
+    case "AI_LOAD":  return {...s,aiLoading:a.val};
+    case "AI_SUGE":  return {...s,aiSugerencia:a.val};
+    case "APPLY_AI": {
       try {
         const parsed=JSON.parse(a.text); const menu={...s.menu};
         parsed.forEach(({dia,comida,receta:nombre})=>{
+          const key=`${dia}-${comida}`; if(menu[key]) return;
           const r=s.recetas.find(r=>r.nombre.toLowerCase()===nombre.toLowerCase());
-          if(r) menu[`${dia}-${comida}`]=r;
+          if(r){ menu[key]=r; if(s.cenasIguales[dia]){ if(comida==="Cena Niños") menu[`${dia}-Cena Padres`]=r; if(comida==="Cena Padres") menu[`${dia}-Cena Niños`]=r; } }
         });
         return {...s,menu,aiSugerencia:"",tab:"menu"};
       } catch { return s; }
@@ -97,240 +119,259 @@ function reducer(s, a) {
   }
 }
 
-// ── Estilos base ──────────────────────────────────────────────────────────────
-const lbl = {display:"block",fontSize:13,fontWeight:600,color:"#475569",marginBottom:4};
-const inp = {width:"100%",border:"1px solid #e2e8f0",borderRadius:8,padding:"9px 12px",fontSize:14,marginBottom:12,outline:"none"};
-
-// ── Sub-componentes ───────────────────────────────────────────────────────────
-function SlotCell({dia,comida,menu,dispatch}) {
-  const r = menu[`${dia}-${comida}`];
-  return (
-    <td style={{padding:4,verticalAlign:"top",minWidth:115}}>
-      {r ? (
-        <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"6px 8px",fontSize:12}}>
-          <div style={{fontWeight:600,marginBottom:2}}>{r.nombre}</div>
-          <div style={{color:"#64748b",fontSize:11}}>{r.categoria}</div>
-          {r.autorNombre && <div style={{color:"#94a3b8",fontSize:10,marginTop:2}}>✏️ {r.autorNombre}</div>}
-          <button onClick={()=>dispatch({type:"REMOVE",dia,comida})}
-            style={{marginTop:4,background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:11,padding:0}}>✕ quitar</button>
-        </div>
-      ) : (
-        <button onClick={()=>dispatch({type:"OPEN_MODAL",slot:{dia,comida}})}
-          style={{width:"100%",minHeight:52,background:"#f8fafc",border:"2px dashed #cbd5e1",borderRadius:8,
-            cursor:"pointer",color:"#94a3b8",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
-      )}
-    </td>
-  );
+function Tag({tipo}) {
+  return React.createElement("span",{style:{background:COLOR[tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 6px",fontSize:10,marginRight:5}},`${EMOJI[tipo]||"🍴"} ${tipo}`);
 }
 
-// ── App principal ─────────────────────────────────────────────────────────────
-function App() {
-  const [s, dispatch] = useReducer(reducer, init);
-  const [saved, setSaved] = useState(false);
+function Checkbox({checked,onChange,color="#3b82f6"}) {
+  return React.createElement("div",{onClick:onChange,style:{width:20,height:20,borderRadius:5,border:checked?"none":"2px solid #cbd5e1",
+    background:checked?color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all .15s"}},
+    checked&&React.createElement("span",{style:{color:"#fff",fontSize:13,lineHeight:1}},"✓"));
+}
 
-  // Auto-guardar en localStorage cuando cambian datos
-  useEffect(() => {
+function Avatar({src,size=28,color}) {
+  return React.createElement("img",{src,style:{width:size,height:size,borderRadius:"50%",border:`2px solid ${color||"rgba(255,255,255,0.5)"}`,objectFit:"cover",flexShrink:0}});
+}
+
+function App() {
+  const [s,dispatch]=useReducer(reducer,init);
+  const [saved,setSaved]=useState(false);
+
+  useEffect(()=>{
     if(!s.usuario) return;
-    saveData(s.recetas, s.menu, s.compra);
-    setSaved(true);
-    const t = setTimeout(()=>setSaved(false), 1500);
-    return ()=>clearTimeout(t);
-  }, [s.recetas, s.menu, s.compra]);
+    save({recetas:s.recetas,menu:s.menu,compra:s.compra,cenasIguales:s.cenasIguales});
+    setSaved(true); const t=setTimeout(()=>setSaved(false),1500); return ()=>clearTimeout(t);
+  },[s.recetas,s.menu,s.compra,s.cenasIguales,s.usuario]);
 
   function genAI() {
-    if(s.recetas.length < 3){ alert("Añade al menos 3 recetas para usar la sugerencia IA"); return; }
-    dispatch({type:"AI_LOAD",val:true});
-    dispatch({type:"TAB",tab:"ia"});
-    const lista = s.recetas.map(r=>`${r.nombre} (${r.tipo}, ${r.categoria})`).join(", ");
-    fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        model:"claude-sonnet-4-20250514", max_tokens:1200,
-        messages:[{role:"user",content:`Eres nutricionista familiar. Recetas: ${lista}. Menú Lunes-Viernes con Almuerzo, Comida, Merienda, Cena Niños, Cena Padres. Cenas niños: suaves. Padres: elaboradas. SOLO JSON array sin markdown: {"dia":"Lunes","comida":"Comida","receta":"nombre exacto"}. Nombres exactos. Equilibrado.`}]
+    if(s.recetas.length<3){alert("Añade al menos 3 recetas");return;}
+    const huecos=[];
+    DIAS.forEach(dia=>ALL_SLOTS.forEach(comida=>{
+      if(s.cenasIguales[dia]&&comida==="Cena Padres") return;
+      if(!s.menu[`${dia}-${comida}`]) huecos.push({dia,comida});
+    }));
+    if(!huecos.length){alert("¡El menú está completo!");return;}
+    dispatch({type:"AI_LOAD",val:true}); dispatch({type:"TAB",tab:"ia"});
+    const lista=s.recetas.map(r=>`${r.nombre} (${r.tipo}, ${r.categoria})`).join(", ");
+    const huecosStr=huecos.map(h=>`${h.dia}-${h.comida}`).join(", ");
+    fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,
+        messages:[{role:"user",content:`Nutricionista familiar. Recetas: ${lista}. Rellena SOLO estos huecos: ${huecosStr}. SOLO JSON array sin markdown: [{"dia":"Lunes","comida":"Almuerzo","receta":"nombre exacto"}]. Nombres exactos. Equilibrado.`}]
       })
     }).then(r=>r.json()).then(d=>{
       dispatch({type:"AI_SUGE",val:d.content?.find(b=>b.type==="text")?.text||"[]"});
       dispatch({type:"AI_LOAD",val:false});
-    }).catch(()=>{ dispatch({type:"AI_SUGE",val:"[]"}); dispatch({type:"AI_LOAD",val:false}); });
+    }).catch(()=>{dispatch({type:"AI_SUGE",val:"[]"});dispatch({type:"AI_LOAD",val:false});});
   }
 
-  const assigned = Object.keys(s.menu).length;
-  const total = DIAS.length * ALL_SLOTS.length;
+  const u=s.usuario;
+  const assigned=Object.keys(s.menu).length;
+  const total=DIAS.length*ALL_SLOTS.length;
+  const huecoCount=total-assigned;
+  const lbl={display:"block",fontSize:13,fontWeight:600,color:"#475569",marginBottom:4};
+  const inp={width:"100%",border:"1px solid #e2e8f0",borderRadius:8,padding:"9px 12px",fontSize:14,marginBottom:12,outline:"none"};
 
-  // ── Pantalla selección de usuario ─────────────────────────────────────────
-  if(!s.usuario) return (
-    <div style={{fontFamily:"system-ui,sans-serif",minHeight:"100vh",background:"linear-gradient(135deg,#eff6ff,#fdf4ff)",
-      display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{background:"#fff",borderRadius:20,padding:40,boxShadow:"0 8px 32px #0002",textAlign:"center",maxWidth:360,width:"100%"}}>
-        <div style={{fontSize:52,marginBottom:12}}>🥦</div>
-        <div style={{fontSize:26,fontWeight:700,marginBottom:4}}>miMenú Familiar</div>
-        <div style={{color:"#64748b",fontSize:14,marginBottom:32}}>¿Quién eres?</div>
-        <div style={{display:"flex",gap:16,justifyContent:"center"}}>
-          {USUARIOS.map(u=>(
-            <button key={u.id} onClick={()=>dispatch({type:"SET_USER",val:u})}
-              style={{flex:1,padding:"24px 16px",borderRadius:16,border:`2px solid ${u.color}30`,
-                background:`${u.color}08`,cursor:"pointer",transition:"all .2s"}}
-              onMouseOver={e=>e.currentTarget.style.background=`${u.color}18`}
-              onMouseOut={e=>e.currentTarget.style.background=`${u.color}08`}>
-              <div style={{fontSize:40,marginBottom:10}}>{u.emoji}</div>
-              <div style={{fontWeight:700,color:u.color,fontSize:16}}>{u.nombre}</div>
+  // Pantalla selección usuario
+  if(!u) return (
+    <div style={{fontFamily:"system-ui,sans-serif",minHeight:"100dvh",background:"linear-gradient(135deg,#eff6ff,#fdf4ff)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:"#fff",borderRadius:20,padding:"36px 28px",boxShadow:"0 8px 32px #0002",textAlign:"center",maxWidth:340,width:"100%"}}>
+        <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:12}}>
+          {USUARIOS.map(uu=><Avatar key={uu.id} src={uu.avatar} size={60} color={uu.color}/>)}
+        </div>
+        <div style={{fontSize:24,fontWeight:700,marginBottom:4}}>🥘 miMenú Familiar</div>
+        <div style={{color:"#64748b",fontSize:14,marginBottom:28}}>¿Quién eres?</div>
+        <div style={{display:"flex",gap:14,justifyContent:"center"}}>
+          {USUARIOS.map(uu=>(
+            <button key={uu.id} onClick={()=>dispatch({type:"SET_USER",val:uu})}
+              style={{flex:1,padding:"20px 12px",borderRadius:16,border:`2px solid ${uu.color}40`,background:`${uu.color}08`,cursor:"pointer"}}>
+              <img src={uu.avatar} style={{width:72,height:72,borderRadius:"50%",border:`3px solid ${uu.color}`,display:"block",margin:"0 auto 10px",objectFit:"cover"}}/>
+              <div style={{fontWeight:700,color:uu.color,fontSize:16}}>{uu.nombre}</div>
             </button>
           ))}
         </div>
-        <div style={{marginTop:24,fontSize:12,color:"#94a3b8"}}>
-          💾 Los datos se guardan en este dispositivo
-        </div>
+        <div style={{marginTop:20,fontSize:12,color:"#94a3b8"}}>💾 Datos guardados en este dispositivo</div>
       </div>
     </div>
   );
 
-  const u = s.usuario;
-
-  // ── App ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{fontFamily:"system-ui,sans-serif",background:"#f8fafc",minHeight:"100vh",color:"#1e293b"}}>
+    <div style={{fontFamily:"system-ui,sans-serif",background:"#f8fafc",height:"100dvh",display:"flex",flexDirection:"column",overflow:"hidden",color:"#1e293b"}}>
 
       {/* Header */}
-      <div style={{background:`linear-gradient(135deg,${u.color},#8b5cf6)`,padding:"14px 20px",color:"#fff",
-        display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{background:`linear-gradient(135deg,${u.color},#8b5cf6)`,padding:"10px 14px",color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
         <div>
-          <div style={{fontSize:20,fontWeight:700}}>🥦 miMenú Familiar</div>
-          <div style={{fontSize:12,opacity:.8,marginTop:1}}>{assigned}/{total} slots · Lunes a Viernes</div>
+          <div style={{fontSize:17,fontWeight:700}}>🥘 miMenú Familiar</div>
+          <div style={{fontSize:11,opacity:.8}}>{assigned}/{total} · {huecoCount>0?`${huecoCount} huecos`:"✅ completo"}</div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          {saved && <div style={{fontSize:12,background:"#ffffff25",borderRadius:20,padding:"4px 10px"}}>✅ Guardado</div>}
-          <div style={{background:"#ffffff25",borderRadius:20,padding:"6px 14px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}
-            onClick={()=>dispatch({type:"SET_USER",val:null})}>
-            <span style={{fontSize:18}}>{u.emoji}</span>
-            <span style={{fontSize:13,fontWeight:600}}>{u.nombre}</span>
-            <span style={{fontSize:11,opacity:.7}}>cambiar</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {saved&&<span style={{fontSize:11,background:"#ffffff25",borderRadius:20,padding:"3px 8px"}}>✅ Guardado</span>}
+          <div onClick={()=>dispatch({type:"SET_USER",val:null})}
+            style={{background:"#ffffff25",borderRadius:20,padding:"5px 12px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}>
+            <Avatar src={u.avatar} size={28} color="rgba(255,255,255,0.6)"/>
+            <span style={{fontSize:12,fontWeight:600}}>{u.nombre}</span>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{display:"flex",background:"#fff",borderBottom:"2px solid #e2e8f0",padding:"0 16px"}}>
-        {[["menu","📅 Menú"],["recetas","🍴 Recetas"],["compra","🛒 Compra"],["ia","✨ IA"]].map(([k,l])=>(
+      <div style={{display:"flex",background:"#fff",borderBottom:"2px solid #e2e8f0",flexShrink:0}}>
+        {[["menu","📅","Menú"],["recetas","🍴","Recetas"],["compra","🛒","Compra"],["ia","✨","IA"]].map(([k,em,nm])=>(
           <button key={k} onClick={()=>dispatch({type:"TAB",tab:k})}
-            style={{border:"none",background:"none",padding:"12px 16px",cursor:"pointer",fontWeight:s.tab===k?700:400,
+            style={{flex:1,border:"none",background:"none",padding:"10px 4px",cursor:"pointer",fontWeight:s.tab===k?700:400,
               borderBottom:s.tab===k?`3px solid ${u.color}`:"3px solid transparent",
-              color:s.tab===k?u.color:"#64748b",fontSize:14}}>{l}</button>
+              color:s.tab===k?u.color:"#64748b",fontSize:13}}>
+            {em} {nm}
+          </button>
         ))}
       </div>
 
-      <div style={{padding:16,maxWidth:1100,margin:"0 auto"}}>
+      {/* Scroll */}
+      <div style={{flex:1,overflowY:"auto",padding:"10px 12px",WebkitOverflowScrolling:"touch"}}>
 
         {/* ── MENÚ ── */}
         {s.tab==="menu" && (
           <div>
-            <div style={{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
               <button onClick={()=>dispatch({type:"GEN_COMPRA"})}
-                style={{background:"#3b82f6",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,cursor:"pointer",fontWeight:600}}>
-                🛒 Generar Lista de Compra</button>
+                style={{flex:1,background:"#3b82f6",color:"#fff",border:"none",padding:"8px 6px",borderRadius:8,cursor:"pointer",fontWeight:600,fontSize:12}}>
+                🛒 Lista compra</button>
               <button onClick={genAI}
-                style={{background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,cursor:"pointer",fontWeight:600}}>
-                ✨ Sugerir menú con IA</button>
+                style={{flex:1,background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",padding:"8px 6px",borderRadius:8,cursor:"pointer",fontWeight:600,fontSize:12,position:"relative"}}>
+                ✨ Rellenar huecos IA
+                {huecoCount>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{huecoCount}</span>}
+              </button>
             </div>
-            <div style={{overflowX:"auto"}}>
-              <table style={{borderCollapse:"collapse",width:"100%",minWidth:680}}>
-                <thead>
-                  <tr>
-                    <th style={{padding:"10px 8px",background:"#f1f5f9",textAlign:"left",fontSize:13,minWidth:130}}>Comida</th>
-                    {DIAS.map(d=><th key={d} style={{padding:"10px 8px",background:"#f1f5f9",textAlign:"center",fontSize:13,fontWeight:700}}>{d}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMIDAS.map(c=>(
-                    <tr key={c}>
-                      <td style={{padding:"8px",fontWeight:600,fontSize:13,whiteSpace:"nowrap"}}>
-                        <span style={{background:COLOR[c],color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:12}}>{EMOJI[c]} {c}</span>
-                      </td>
-                      {DIAS.map(d=><SlotCell key={d} dia={d} comida={c} menu={s.menu} dispatch={dispatch}/>)}
-                    </tr>
-                  ))}
-                  <tr>
-                    <td colSpan={DIAS.length+1} style={{padding:"6px 8px",background:"#f8fafc"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        <div style={{flex:1,height:1,background:"#e2e8f0"}}/>
-                        <span style={{fontSize:12,color:"#94a3b8",fontWeight:600,whiteSpace:"nowrap"}}>🌙 CENAS</span>
-                        <div style={{flex:1,height:1,background:"#e2e8f0"}}/>
+            <div style={{background:"#fff",borderRadius:14,boxShadow:"0 1px 4px #0001",overflow:"hidden"}}>
+              {/* Cabecera días */}
+              <div style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:`linear-gradient(135deg,${u.color},#8b5cf6)`}}>
+                <div style={{padding:"8px 4px"}}/>
+                {DIAS_SHORT.map(([sh,full])=>{
+                  const df=ALL_SLOTS.filter(c=>s.menu[`${full}-${c}`]).length;
+                  return (
+                    <div key={sh} style={{padding:"6px 2px",textAlign:"center"}}>
+                      <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{sh}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,0.7)",marginTop:1}}>{df}/{ALL_SLOTS.length}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Filas */}
+              {FILAS.map(([short,comida,color],rowIdx)=>(
+                <div key={comida} style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:rowIdx%2===0?"#fafafa":"#fff",borderTop:"1px solid #f1f5f9"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"4px 2px",borderRight:"2px solid #f1f5f9"}}>
+                    <span style={{background:color,color:"#fff",borderRadius:5,padding:"3px 4px",fontSize:9,fontWeight:700,textAlign:"center",lineHeight:1.2,whiteSpace:"nowrap"}}>{short}</span>
+                  </div>
+                  {DIAS.map(dia=>{
+                    if(s.cenasIguales[dia]&&comida==="Cena Padres")
+                      return <div key={dia} style={{padding:3,display:"flex",alignItems:"center",justifyContent:"center",borderLeft:"1px solid #f1f5f9"}}><span style={{fontSize:9,color:"#cbd5e1"}}>= Ce N</span></div>;
+                    const r=s.menu[`${dia}-${comida}`];
+                    return (
+                      <div key={dia} style={{padding:3,borderLeft:"1px solid #f1f5f9",minHeight:44,display:"flex",alignItems:"stretch"}}>
+                        {r ? (
+                          <div style={{flex:1,background:color+"18",border:`1px solid ${color}40`,borderRadius:6,padding:"3px 4px",display:"flex",flexDirection:"column",justifyContent:"space-between",cursor:"pointer",minWidth:0}}
+                            onClick={()=>dispatch({type:"OPEN_MODAL",slot:{dia,comida}})}>
+                            <div style={{fontSize:10,fontWeight:700,lineHeight:1.2,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",color:"#1e293b"}}>{r.nombre}</div>
+                            <button onClick={e=>{e.stopPropagation();dispatch({type:"REMOVE",dia,comida});}}
+                              style={{background:"none",border:"none",color:color,cursor:"pointer",fontSize:8,padding:0,textAlign:"left",marginTop:2,opacity:.7}}>✕ quitar</button>
+                          </div>
+                        ) : (
+                          <button onClick={()=>dispatch({type:"OPEN_MODAL",slot:{dia,comida}})}
+                            style={{flex:1,background:"transparent",border:`1.5px dashed ${color}50`,borderRadius:6,cursor:"pointer",color:color+"80",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                        )}
                       </div>
-                    </td>
-                  </tr>
-                  {CENA_SLOTS.map(c=>(
-                    <tr key={c}>
-                      <td style={{padding:"8px",fontWeight:600,fontSize:13,whiteSpace:"nowrap"}}>
-                        <span style={{background:COLOR[c],color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:12}}>{EMOJI[c]} {c}</span>
-                      </td>
-                      {DIAS.map(d=><SlotCell key={d} dia={d} comida={c} menu={s.menu} dispatch={dispatch}/>)}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    );
+                  })}
+                </div>
+              ))}
+              {/* Toggle cenas iguales */}
+              <div style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:"#f8fafc",borderTop:"2px solid #e2e8f0"}}>
+                <div style={{padding:"5px 2px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:8,color:"#94a3b8",textAlign:"center",lineHeight:1.2}}>Ce=</span>
+                </div>
+                {DIAS.map(dia=>(
+                  <div key={dia} style={{padding:"5px 4px",borderLeft:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
+                    <Checkbox checked={!!s.cenasIguales[dia]} onChange={()=>dispatch({type:"TOGGLE_CI",dia})} color="#f59e0b"/>
+                    <span style={{fontSize:9,color:"#94a3b8"}}>igual</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Leyenda */}
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10}}>
+              {FILAS.map(([sh,l,c])=>(
+                <span key={sh} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#64748b"}}>
+                  <span style={{background:c,color:"#fff",borderRadius:4,padding:"1px 5px",fontSize:10,fontWeight:700}}>{sh}</span>{l}
+                </span>
+              ))}
             </div>
           </div>
         )}
 
         {/* ── RECETAS ── */}
         {s.tab==="recetas" && (
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-            <div style={{background:"#fff",borderRadius:12,padding:20,boxShadow:"0 1px 4px #0001"}}>
-              <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>➕ Nueva receta</div>
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            <div style={{background:"#fff",borderRadius:12,padding:16,boxShadow:"0 1px 4px #0001"}}>
+              <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>➕ Nueva receta</div>
               <label style={lbl}>Nombre</label>
               <input value={s.recetaForm.nombre} onChange={e=>dispatch({type:"RF",data:{nombre:e.target.value}})} style={inp} placeholder="Ej: Pollo al horno"/>
-              <label style={lbl}>Tipo de comida</label>
+              <label style={lbl}>Tipo</label>
               <select value={s.recetaForm.tipo} onChange={e=>dispatch({type:"RF",data:{tipo:e.target.value}})} style={inp}>
                 {TIPOS_RECETA.map(c=><option key={c}>{c}</option>)}
               </select>
-              <label style={lbl}>Categoría nutricional</label>
-              <select value={s.recetaForm.categoria} onChange={e=>dispatch({type:"RF",data:{categoria:e.target.value}})} style={inp}>
-                {CATEGORIAS.map(c=><option key={c}>{c}</option>)}
-              </select>
-              <label style={lbl}>Calorías aprox.</label>
-              <input value={s.recetaForm.calorias} onChange={e=>dispatch({type:"RF",data:{calorias:e.target.value}})} style={inp} placeholder="Ej: 450 kcal"/>
-              <label style={lbl}>Ingredientes</label>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div>
+                  <label style={lbl}>Categoría</label>
+                  <select value={s.recetaForm.categoria} onChange={e=>dispatch({type:"RF",data:{categoria:e.target.value}})} style={{...inp,marginBottom:0}}>
+                    {CATEGORIAS.map(c=><option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={lbl}>Calorías</label>
+                  <input value={s.recetaForm.calorias} onChange={e=>dispatch({type:"RF",data:{calorias:e.target.value}})} style={{...inp,marginBottom:0}} placeholder="450 kcal"/>
+                </div>
+              </div>
+              <label style={{...lbl,marginTop:12}}>Ingredientes</label>
               <div style={{display:"flex",gap:8,marginBottom:8}}>
                 <input value={s.ingInput} onChange={e=>dispatch({type:"ING_IN",val:e.target.value})}
                   onKeyDown={e=>e.key==="Enter"&&dispatch({type:"ADD_ING"})}
                   style={{...inp,flex:1,marginBottom:0}} placeholder="Añadir ingrediente..."/>
                 <button onClick={()=>dispatch({type:"ADD_ING"})}
-                  style={{background:"#3b82f6",color:"#fff",border:"none",borderRadius:8,padding:"0 14px",cursor:"pointer",fontWeight:700}}>+</button>
+                  style={{background:"#3b82f6",color:"#fff",border:"none",borderRadius:8,padding:"0 14px",cursor:"pointer",fontWeight:700,fontSize:18}}>+</button>
               </div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
                 {s.recetaForm.ingredientes.map((ing,i)=>(
                   <span key={i} style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 10px",fontSize:12,display:"flex",alignItems:"center",gap:5}}>
-                    {ing} <span onClick={()=>dispatch({type:"DEL_ING",idx:i})} style={{cursor:"pointer",color:"#ef4444"}}>×</span>
+                    {ing}<span onClick={()=>dispatch({type:"DEL_ING",idx:i})} style={{cursor:"pointer",color:"#ef4444"}}>×</span>
                   </span>
                 ))}
               </div>
               <button onClick={()=>dispatch({type:"SAVE_R"})}
-                style={{width:"100%",background:u.color,color:"#fff",border:"none",padding:"11px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:15}}>
-                {u.emoji} Guardar como {u.nombre}
+                style={{width:"100%",background:u.color,color:"#fff",border:"none",padding:"12px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+                <Avatar src={u.avatar} size={24} color="rgba(255,255,255,0.5)"/>
+                Guardar como {u.nombre}
               </button>
             </div>
-
-            <div style={{background:"#fff",borderRadius:12,padding:20,boxShadow:"0 1px 4px #0001",maxHeight:520,overflowY:"auto"}}>
-              <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>📋 Todas las recetas ({s.recetas.length})</div>
-              {s.recetas.length===0 && <div style={{color:"#94a3b8",textAlign:"center",marginTop:40}}>Aún no hay recetas guardadas.</div>}
+            <div style={{background:"#fff",borderRadius:12,padding:16,boxShadow:"0 1px 4px #0001"}}>
+              <div style={{fontWeight:700,fontSize:15,marginBottom:12}}>📋 Todas las recetas ({s.recetas.length})</div>
+              {s.recetas.length===0&&<div style={{color:"#94a3b8",textAlign:"center",padding:"30px 0"}}>Aún no hay recetas.</div>}
               {s.recetas.map(r=>{
-                const autor = USUARIOS.find(uu=>uu.id===r.autor);
+                const autor=USUARIOS.find(uu=>uu.id===r.autor);
                 return (
-                  <div key={r.id} style={{border:"1px solid #e2e8f0",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                  <div key={r.id} style={{border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 12px",marginBottom:8}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                      <div>
-                        <div style={{fontWeight:700}}>{r.nombre}</div>
-                        <div style={{fontSize:12,color:"#64748b",marginTop:2}}>
-                          <span style={{background:COLOR[r.tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 7px",marginRight:6,fontSize:11}}>{EMOJI[r.tipo]||"🍴"} {r.tipo}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontWeight:700,fontSize:14}}>{r.nombre}</div>
+                        <div style={{fontSize:11,color:"#64748b",marginTop:2,display:"flex",flexWrap:"wrap",gap:4,alignItems:"center"}}>
+                          <Tag tipo={r.tipo}/>
                           {r.categoria}{r.calorias&&` • ${r.calorias}`}
-                          {autor&&<span style={{marginLeft:6,color:autor.color,fontWeight:600}}>{autor.emoji} {autor.nombre}</span>}
+                          {autor&&<Avatar src={autor.avatar} size={16} color={autor.color}/>}
                         </div>
                       </div>
-                      <button onClick={()=>dispatch({type:"DEL_R",id:r.id})}
-                        style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18}}>🗑</button>
+                      <button onClick={()=>dispatch({type:"DEL_R",id:r.id})} style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18,flexShrink:0}}>🗑</button>
                     </div>
                     {r.ingredientes.length>0&&(
-                      <div style={{marginTop:8,display:"flex",flexWrap:"wrap",gap:5}}>
-                        {r.ingredientes.map((ing,i)=><span key={i} style={{background:"#f1f5f9",borderRadius:20,padding:"2px 9px",fontSize:11}}>{ing}</span>)}
+                      <div style={{marginTop:6,display:"flex",flexWrap:"wrap",gap:4}}>
+                        {r.ingredientes.map((ing,i)=><span key={i} style={{background:"#f1f5f9",borderRadius:20,padding:"2px 8px",fontSize:11}}>{ing}</span>)}
                       </div>
                     )}
                   </div>
@@ -342,26 +383,21 @@ function App() {
 
         {/* ── COMPRA ── */}
         {s.tab==="compra" && (
-          <div style={{maxWidth:520}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontWeight:700,fontSize:18}}>🛒 Lista de la compra</div>
-              <button onClick={()=>dispatch({type:"GEN_COMPRA"})}
-                style={{background:"#3b82f6",color:"#fff",border:"none",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontWeight:600}}>🔄 Actualizar</button>
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontWeight:700,fontSize:17}}>🛒 Lista de la compra</div>
+              <button onClick={()=>dispatch({type:"GEN_COMPRA"})} style={{background:"#3b82f6",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,cursor:"pointer",fontWeight:600,fontSize:13}}>🔄 Actualizar</button>
             </div>
             {s.compra.length===0
-              ? <div style={{color:"#94a3b8",textAlign:"center",marginTop:60}}><div style={{fontSize:48}}>🛒</div><div>Planifica tu menú y pulsa "Generar Lista de Compra"</div></div>
+              ? <div style={{color:"#94a3b8",textAlign:"center",paddingTop:60}}><div style={{fontSize:48}}>🛒</div><div style={{marginTop:10}}>Planifica el menú y pulsa "Actualizar"</div></div>
               : <div>
-                  <div style={{color:"#64748b",fontSize:13,marginBottom:10}}>{s.compra.filter(c=>c.checked).length}/{s.compra.length} artículos marcados</div>
+                  <div style={{color:"#64748b",fontSize:13,marginBottom:10}}>{s.compra.filter(c=>c.checked).length}/{s.compra.length} artículos</div>
                   {s.compra.map((c,i)=>(
                     <div key={i} onClick={()=>dispatch({type:"TOGGLE_C",idx:i})}
-                      style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"#fff",
-                        border:"1px solid #e2e8f0",borderRadius:10,marginBottom:8,cursor:"pointer",opacity:c.checked?.5:1,transition:"opacity .2s"}}>
-                      <div style={{width:22,height:22,borderRadius:6,border:c.checked?"none":"2px solid #cbd5e1",
-                        background:c.checked?u.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                        {c.checked&&<span style={{color:"#fff",fontSize:14}}>✓</span>}
-                      </div>
-                      <span style={{flex:1,textDecoration:c.checked?"line-through":"none",fontWeight:500}}>{c.ing}</span>
-                      {c.n>1&&<span style={{background:"#eff6ff",color:"#3b82f6",borderRadius:20,padding:"1px 9px",fontSize:12,fontWeight:700}}>×{c.n}</span>}
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,marginBottom:8,cursor:"pointer",opacity:c.checked?.5:1}}>
+                      <Checkbox checked={c.checked} onChange={()=>dispatch({type:"TOGGLE_C",idx:i})} color={u.color}/>
+                      <span style={{flex:1,textDecoration:c.checked?"line-through":"none",fontWeight:500,fontSize:15}}>{c.ing}</span>
+                      {c.n>1&&<span style={{background:"#eff6ff",color:"#3b82f6",borderRadius:20,padding:"2px 10px",fontSize:12,fontWeight:700}}>×{c.n}</span>}
                     </div>
                   ))}
                 </div>
@@ -371,70 +407,74 @@ function App() {
 
         {/* ── IA ── */}
         {s.tab==="ia" && (
-          <div style={{maxWidth:620}}>
-            <div style={{fontWeight:700,fontSize:18,marginBottom:10}}>✨ Sugerencia de menú con IA</div>
-            {s.aiLoading&&<div style={{textAlign:"center",padding:60}}><div style={{fontSize:40,marginBottom:16}}>🤖</div><div style={{color:"#64748b"}}>Planificando menú familiar equilibrado...</div></div>}
+          <div>
+            <div style={{fontWeight:700,fontSize:17,marginBottom:6}}>✨ Rellenar huecos con IA</div>
+            {huecoCount>0&&!s.aiLoading&&!s.aiSugerencia&&(
+              <div style={{background:"#fefce8",border:"1px solid #fde047",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:13,color:"#854d0e"}}>
+                🔍 Hay <strong>{huecoCount} huecos</strong> sin rellenar. La IA solo completará esos espacios.
+              </div>
+            )}
+            {huecoCount===0&&!s.aiLoading&&!s.aiSugerencia&&(
+              <div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:13,color:"#166534"}}>✅ ¡El menú está completo!</div>
+            )}
+            {s.aiLoading&&<div style={{textAlign:"center",padding:60}}><div style={{fontSize:40,marginBottom:12}}>🤖</div><div style={{color:"#64748b"}}>Rellenando {huecoCount} huecos...</div></div>}
             {!s.aiLoading&&s.aiSugerencia&&(()=>{
               let items=[]; try{items=JSON.parse(s.aiSugerencia);}catch{}
               return (
                 <div>
-                  <div style={{color:"#64748b",marginBottom:16}}>Sugerencia para esta semana:</div>
-                  {DIAS.map(dia=>(
-                    <div key={dia} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,padding:"12px 16px",marginBottom:10}}>
-                      <div style={{fontWeight:700,marginBottom:8}}>📅 {dia}</div>
-                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                        {items.filter(it=>it.dia===dia).map((it,i)=>(
-                          <span key={i} style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"4px 12px",fontSize:13}}>
-                            <span style={{background:COLOR[it.comida]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 6px",fontSize:11,marginRight:6}}>{EMOJI[it.comida]||"🍴"} {it.comida}</span>
-                            {it.receta}
-                          </span>
-                        ))}
+                  <div style={{color:"#64748b",marginBottom:12,fontSize:14}}>La IA propone rellenar estos huecos:</div>
+                  {DIAS.map(dia=>{
+                    const di=items.filter(it=>it.dia===dia); if(!di.length) return null;
+                    return (
+                      <div key={dia} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 14px",marginBottom:8}}>
+                        <div style={{fontWeight:700,marginBottom:6,fontSize:14}}>📅 {dia}</div>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                          {di.map((it,i)=>(
+                            <span key={i} style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"3px 10px",fontSize:12}}>
+                              <span style={{background:COLOR[it.comida]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 5px",fontSize:10,marginRight:5}}>{EMOJI[it.comida]||"🍴"} {it.comida}</span>
+                              {it.receta}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <button onClick={()=>dispatch({type:"APPLY_AI",text:s.aiSugerencia})}
-                    style={{marginTop:8,background:"linear-gradient(135deg,#8b5cf6,#3b82f6)",color:"#fff",border:"none",
-                      padding:"12px 24px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15,width:"100%"}}>
-                    ✅ Aplicar este menú a la semana
+                    style={{marginTop:8,background:"linear-gradient(135deg,#8b5cf6,#3b82f6)",color:"#fff",border:"none",padding:"13px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15,width:"100%"}}>
+                    ✅ Aplicar sugerencia
                   </button>
                 </div>
               );
             })()}
-            {!s.aiLoading&&!s.aiSugerencia&&(
-              <div style={{textAlign:"center",padding:60}}>
-                <div style={{fontSize:48,marginBottom:16}}>✨</div>
-                <div style={{color:"#64748b",marginBottom:20}}>Añade tus recetas y deja que la IA organice la semana familiar.</div>
-                <button onClick={genAI}
-                  style={{background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",
-                    padding:"12px 28px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15}}>
-                  ✨ Sugerir menú con IA
-                </button>
-              </div>
+            {!s.aiLoading&&!s.aiSugerencia&&huecoCount>0&&(
+              <button onClick={genAI} style={{width:"100%",background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",padding:"14px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15,marginTop:8}}>
+                ✨ Rellenar {huecoCount} huecos con IA
+              </button>
             )}
           </div>
         )}
       </div>
 
-      {/* Modal selección receta */}
+      {/* Modal bottom sheet */}
       {s.modalOpen&&(
-        <div style={{position:"fixed",inset:0,background:"#0006",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100}}
+        <div style={{position:"fixed",inset:0,background:"#0007",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100}}
           onClick={()=>dispatch({type:"CLOSE_MODAL"})}>
-          <div style={{background:"#fff",borderRadius:14,padding:24,minWidth:320,maxWidth:420,maxHeight:"80vh",overflowY:"auto"}}
+          <div style={{background:"#fff",borderRadius:"20px 20px 0 0",padding:20,width:"100%",maxWidth:500,maxHeight:"75dvh",overflowY:"auto"}}
             onClick={e=>e.stopPropagation()}>
-            <div style={{fontWeight:700,fontSize:17,marginBottom:4}}>{EMOJI[s.modalSlot?.comida]} {s.modalSlot?.dia} — {s.modalSlot?.comida}</div>
-            <div style={{color:"#64748b",fontSize:13,marginBottom:16}}>Recetas de este tipo aparecen primero.</div>
-            {s.recetas.length===0&&<div style={{color:"#94a3b8"}}>Ve a Recetas para añadir platos.</div>}
+            <div style={{width:40,height:4,background:"#e2e8f0",borderRadius:2,margin:"0 auto 16px"}}/>
+            <div style={{fontWeight:700,fontSize:16,marginBottom:4}}>{EMOJI[s.modalSlot?.comida]} {s.modalSlot?.dia} — {s.modalSlot?.comida}</div>
+            <div style={{color:"#64748b",fontSize:13,marginBottom:14}}>Recetas de este tipo aparecen primero.</div>
+            {s.recetas.length===0&&<div style={{color:"#94a3b8",textAlign:"center",padding:20}}>Ve a Recetas para añadir platos.</div>}
             {[...s.recetas].sort((a,b)=>a.tipo===s.modalSlot?.comida?-1:1).map(r=>{
               const autor=USUARIOS.find(uu=>uu.id===r.autor);
               return (
                 <div key={r.id} onClick={()=>dispatch({type:"ASSIGN",dia:s.modalSlot.dia,comida:s.modalSlot.comida,receta:r})}
-                  style={{border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 14px",marginBottom:8,cursor:"pointer",
-                    background:r.tipo===s.modalSlot?.comida?"#eff6ff":"#fafafa"}}>
-                  <div style={{fontWeight:600}}>{r.nombre}</div>
-                  <div style={{fontSize:12,color:"#64748b"}}>
-                    <span style={{background:COLOR[r.tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 7px",marginRight:6,fontSize:11}}>{EMOJI[r.tipo]||"🍴"} {r.tipo}</span>
+                  style={{border:"1px solid #e2e8f0",borderRadius:12,padding:"12px 14px",marginBottom:8,cursor:"pointer",background:r.tipo===s.modalSlot?.comida?"#eff6ff":"#fafafa"}}>
+                  <div style={{fontWeight:600,fontSize:14}}>{r.nombre}</div>
+                  <div style={{fontSize:12,color:"#64748b",marginTop:2,display:"flex",alignItems:"center",flexWrap:"wrap",gap:4}}>
+                    <Tag tipo={r.tipo}/>
                     {r.categoria}{r.calorias&&` • ${r.calorias}`}
-                    {autor&&<span style={{marginLeft:6,color:autor.color}}>{autor.emoji}</span>}
+                    {autor&&<Avatar src={autor.avatar} size={16} color={autor.color}/>}
                   </div>
                 </div>
               );
@@ -450,3 +490,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 </body>
 </html>
+}
