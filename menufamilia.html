@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>miMenú Familiar</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
+    input, select, button { font-family: inherit; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useReducer, useEffect, useCallback, useState } = React;
+
+const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+const COMIDAS = ["Almuerzo","Comida","Merienda"];
+const CENA_SLOTS = ["Cena Niños","Cena Padres"];
+const ALL_SLOTS = [...COMIDAS, ...CENA_SLOTS];
+const CATEGORIAS = ["Proteínas","Verduras","Cereales/Pasta","Frutas","Lácteos","Legumbres","Otros"];
+const TIPOS_RECETA = ["Almuerzo","Comida","Merienda","Cena Niños","Cena Padres"];
+const USUARIOS = [
+  { id:"nacho",  nombre:"Nacho", emoji:"👨", color:"#3b82f6" },
+  { id:"irene",  nombre:"Irene", emoji:"👩", color:"#ec4899" },
+];
+
+const COLOR = { Almuerzo:"#10b981", Comida:"#3b82f6", Merienda:"#a78bfa", "Cena Niños":"#f59e0b", "Cena Padres":"#f87171" };
+const EMOJI = { Almuerzo:"🥗", Comida:"🍽️", Merienda:"🍎", "Cena Niños":"👶", "Cena Padres":"🍷" };
+
+// ── Persistencia local (localStorage) ─────────────────────────────────────────
+const LS_KEY = "mimenufamiliar-data";
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || { recetas:[], menu:{}, compra:[] }; }
+  catch { return { recetas:[], menu:{}, compra:[] }; }
+}
+function saveData(recetas, menu, compra) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ recetas, menu, compra })); } catch {}
+}
+
+// ── Estado / reducer ──────────────────────────────────────────────────────────
+const stored = loadData();
+const init = {
+  tab:"menu", menu: stored.menu, recetas: stored.recetas, compra: stored.compra,
+  modalOpen:false, modalSlot:null,
+  recetaForm:{ nombre:"", tipo:"Comida", ingredientes:[], categoria:"Otros", calorias:"" },
+  ingInput:"", aiLoading:false, aiSugerencia:"", usuario:null,
+};
+
+function reducer(s, a) {
+  switch(a.type) {
+    case "TAB":        return {...s, tab:a.tab};
+    case "SET_USER":   return {...s, usuario:a.val};
+    case "OPEN_MODAL": return {...s, modalOpen:true, modalSlot:a.slot};
+    case "CLOSE_MODAL":return {...s, modalOpen:false, modalSlot:null};
+    case "ASSIGN":     return {...s, menu:{...s.menu,[`${a.dia}-${a.comida}`]:a.receta}, modalOpen:false, modalSlot:null};
+    case "REMOVE":     { const m={...s.menu}; delete m[`${a.dia}-${a.comida}`]; return {...s,menu:m}; }
+    case "RF":         return {...s, recetaForm:{...s.recetaForm,...a.data}};
+    case "ING_IN":     return {...s, ingInput:a.val};
+    case "ADD_ING":    { const v=s.ingInput.trim(); if(!v) return s; return {...s, recetaForm:{...s.recetaForm, ingredientes:[...s.recetaForm.ingredientes,v]}, ingInput:""}; }
+    case "DEL_ING":    return {...s, recetaForm:{...s.recetaForm, ingredientes:s.recetaForm.ingredientes.filter((_,i)=>i!==a.idx)}};
+    case "SAVE_R":     {
+      if(!s.recetaForm.nombre) return s;
+      const r={...s.recetaForm, id:Date.now(), autor:s.usuario?.id, autorNombre:s.usuario?.nombre};
+      return {...s, recetas:[...s.recetas,r], recetaForm:{nombre:"",tipo:"Comida",ingredientes:[],categoria:"Otros",calorias:""}, ingInput:""};
+    }
+    case "DEL_R": {
+      const recetas=s.recetas.filter(r=>r.id!==a.id);
+      const menu={...s.menu}; Object.keys(menu).forEach(k=>{if(menu[k]?.id===a.id) delete menu[k];});
+      return {...s,recetas,menu};
+    }
+    case "GEN_COMPRA": {
+      const map={};
+      Object.values(s.menu).forEach(r=>{ if(!r) return; r.ingredientes.forEach(ing=>{map[ing]=(map[ing]||0)+1;}); });
+      return {...s, compra:Object.entries(map).map(([ing,n])=>({ing,n,checked:false})), tab:"compra"};
+    }
+    case "TOGGLE_C":  return {...s, compra:s.compra.map((c,i)=>i===a.idx?{...c,checked:!c.checked}:c)};
+    case "AI_LOAD":   return {...s, aiLoading:a.val};
+    case "AI_SUGE":   return {...s, aiSugerencia:a.val};
+    case "APPLY_AI":  {
+      try {
+        const parsed=JSON.parse(a.text); const menu={...s.menu};
+        parsed.forEach(({dia,comida,receta:nombre})=>{
+          const r=s.recetas.find(r=>r.nombre.toLowerCase()===nombre.toLowerCase());
+          if(r) menu[`${dia}-${comida}`]=r;
+        });
+        return {...s,menu,aiSugerencia:"",tab:"menu"};
+      } catch { return s; }
+    }
+    default: return s;
+  }
+}
+
+// ── Estilos base ──────────────────────────────────────────────────────────────
+const lbl = {display:"block",fontSize:13,fontWeight:600,color:"#475569",marginBottom:4};
+const inp = {width:"100%",border:"1px solid #e2e8f0",borderRadius:8,padding:"9px 12px",fontSize:14,marginBottom:12,outline:"none"};
+
+// ── Sub-componentes ───────────────────────────────────────────────────────────
+function SlotCell({dia,comida,menu,dispatch}) {
+  const r = menu[`${dia}-${comida}`];
+  return (
+    <td style={{padding:4,verticalAlign:"top",minWidth:115}}>
+      {r ? (
+        <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"6px 8px",fontSize:12}}>
+          <div style={{fontWeight:600,marginBottom:2}}>{r.nombre}</div>
+          <div style={{color:"#64748b",fontSize:11}}>{r.categoria}</div>
+          {r.autorNombre && <div style={{color:"#94a3b8",fontSize:10,marginTop:2}}>✏️ {r.autorNombre}</div>}
+          <button onClick={()=>dispatch({type:"REMOVE",dia,comida})}
+            style={{marginTop:4,background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:11,padding:0}}>✕ quitar</button>
+        </div>
+      ) : (
+        <button onClick={()=>dispatch({type:"OPEN_MODAL",slot:{dia,comida}})}
+          style={{width:"100%",minHeight:52,background:"#f8fafc",border:"2px dashed #cbd5e1",borderRadius:8,
+            cursor:"pointer",color:"#94a3b8",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+      )}
+    </td>
+  );
+}
+
+// ── App principal ─────────────────────────────────────────────────────────────
+function App() {
+  const [s, dispatch] = useReducer(reducer, init);
+  const [saved, setSaved] = useState(false);
+
+  // Auto-guardar en localStorage cuando cambian datos
+  useEffect(() => {
+    if(!s.usuario) return;
+    saveData(s.recetas, s.menu, s.compra);
+    setSaved(true);
+    const t = setTimeout(()=>setSaved(false), 1500);
+    return ()=>clearTimeout(t);
+  }, [s.recetas, s.menu, s.compra]);
+
+  function genAI() {
+    if(s.recetas.length < 3){ alert("Añade al menos 3 recetas para usar la sugerencia IA"); return; }
+    dispatch({type:"AI_LOAD",val:true});
+    dispatch({type:"TAB",tab:"ia"});
+    const lista = s.recetas.map(r=>`${r.nombre} (${r.tipo}, ${r.categoria})`).join(", ");
+    fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514", max_tokens:1200,
+        messages:[{role:"user",content:`Eres nutricionista familiar. Recetas: ${lista}. Menú Lunes-Viernes con Almuerzo, Comida, Merienda, Cena Niños, Cena Padres. Cenas niños: suaves. Padres: elaboradas. SOLO JSON array sin markdown: {"dia":"Lunes","comida":"Comida","receta":"nombre exacto"}. Nombres exactos. Equilibrado.`}]
+      })
+    }).then(r=>r.json()).then(d=>{
+      dispatch({type:"AI_SUGE",val:d.content?.find(b=>b.type==="text")?.text||"[]"});
+      dispatch({type:"AI_LOAD",val:false});
+    }).catch(()=>{ dispatch({type:"AI_SUGE",val:"[]"}); dispatch({type:"AI_LOAD",val:false}); });
+  }
+
+  const assigned = Object.keys(s.menu).length;
+  const total = DIAS.length * ALL_SLOTS.length;
+
+  // ── Pantalla selección de usuario ─────────────────────────────────────────
+  if(!s.usuario) return (
+    <div style={{fontFamily:"system-ui,sans-serif",minHeight:"100vh",background:"linear-gradient(135deg,#eff6ff,#fdf4ff)",
+      display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{background:"#fff",borderRadius:20,padding:40,boxShadow:"0 8px 32px #0002",textAlign:"center",maxWidth:360,width:"100%"}}>
+        <div style={{fontSize:52,marginBottom:12}}>🥦</div>
+        <div style={{fontSize:26,fontWeight:700,marginBottom:4}}>miMenú Familiar</div>
+        <div style={{color:"#64748b",fontSize:14,marginBottom:32}}>¿Quién eres?</div>
+        <div style={{display:"flex",gap:16,justifyContent:"center"}}>
+          {USUARIOS.map(u=>(
+            <button key={u.id} onClick={()=>dispatch({type:"SET_USER",val:u})}
+              style={{flex:1,padding:"24px 16px",borderRadius:16,border:`2px solid ${u.color}30`,
+                background:`${u.color}08`,cursor:"pointer",transition:"all .2s"}}
+              onMouseOver={e=>e.currentTarget.style.background=`${u.color}18`}
+              onMouseOut={e=>e.currentTarget.style.background=`${u.color}08`}>
+              <div style={{fontSize:40,marginBottom:10}}>{u.emoji}</div>
+              <div style={{fontWeight:700,color:u.color,fontSize:16}}>{u.nombre}</div>
+            </button>
+          ))}
+        </div>
+        <div style={{marginTop:24,fontSize:12,color:"#94a3b8"}}>
+          💾 Los datos se guardan en este dispositivo
+        </div>
+      </div>
+    </div>
+  );
+
+  const u = s.usuario;
+
+  // ── App ───────────────────────────────────────────────────────────────────
+  return (
+    <div style={{fontFamily:"system-ui,sans-serif",background:"#f8fafc",minHeight:"100vh",color:"#1e293b"}}>
+
+      {/* Header */}
+      <div style={{background:`linear-gradient(135deg,${u.color},#8b5cf6)`,padding:"14px 20px",color:"#fff",
+        display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <div style={{fontSize:20,fontWeight:700}}>🥦 miMenú Familiar</div>
+          <div style={{fontSize:12,opacity:.8,marginTop:1}}>{assigned}/{total} slots · Lunes a Viernes</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {saved && <div style={{fontSize:12,background:"#ffffff25",borderRadius:20,padding:"4px 10px"}}>✅ Guardado</div>}
+          <div style={{background:"#ffffff25",borderRadius:20,padding:"6px 14px",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}
+            onClick={()=>dispatch({type:"SET_USER",val:null})}>
+            <span style={{fontSize:18}}>{u.emoji}</span>
+            <span style={{fontSize:13,fontWeight:600}}>{u.nombre}</span>
+            <span style={{fontSize:11,opacity:.7}}>cambiar</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",background:"#fff",borderBottom:"2px solid #e2e8f0",padding:"0 16px"}}>
+        {[["menu","📅 Menú"],["recetas","🍴 Recetas"],["compra","🛒 Compra"],["ia","✨ IA"]].map(([k,l])=>(
+          <button key={k} onClick={()=>dispatch({type:"TAB",tab:k})}
+            style={{border:"none",background:"none",padding:"12px 16px",cursor:"pointer",fontWeight:s.tab===k?700:400,
+              borderBottom:s.tab===k?`3px solid ${u.color}`:"3px solid transparent",
+              color:s.tab===k?u.color:"#64748b",fontSize:14}}>{l}</button>
+        ))}
+      </div>
+
+      <div style={{padding:16,maxWidth:1100,margin:"0 auto"}}>
+
+        {/* ── MENÚ ── */}
+        {s.tab==="menu" && (
+          <div>
+            <div style={{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}}>
+              <button onClick={()=>dispatch({type:"GEN_COMPRA"})}
+                style={{background:"#3b82f6",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,cursor:"pointer",fontWeight:600}}>
+                🛒 Generar Lista de Compra</button>
+              <button onClick={genAI}
+                style={{background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,cursor:"pointer",fontWeight:600}}>
+                ✨ Sugerir menú con IA</button>
+            </div>
+            <div style={{overflowX:"auto"}}>
+              <table style={{borderCollapse:"collapse",width:"100%",minWidth:680}}>
+                <thead>
+                  <tr>
+                    <th style={{padding:"10px 8px",background:"#f1f5f9",textAlign:"left",fontSize:13,minWidth:130}}>Comida</th>
+                    {DIAS.map(d=><th key={d} style={{padding:"10px 8px",background:"#f1f5f9",textAlign:"center",fontSize:13,fontWeight:700}}>{d}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMIDAS.map(c=>(
+                    <tr key={c}>
+                      <td style={{padding:"8px",fontWeight:600,fontSize:13,whiteSpace:"nowrap"}}>
+                        <span style={{background:COLOR[c],color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:12}}>{EMOJI[c]} {c}</span>
+                      </td>
+                      {DIAS.map(d=><SlotCell key={d} dia={d} comida={c} menu={s.menu} dispatch={dispatch}/>)}
+                    </tr>
+                  ))}
+                  <tr>
+                    <td colSpan={DIAS.length+1} style={{padding:"6px 8px",background:"#f8fafc"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{flex:1,height:1,background:"#e2e8f0"}}/>
+                        <span style={{fontSize:12,color:"#94a3b8",fontWeight:600,whiteSpace:"nowrap"}}>🌙 CENAS</span>
+                        <div style={{flex:1,height:1,background:"#e2e8f0"}}/>
+                      </div>
+                    </td>
+                  </tr>
+                  {CENA_SLOTS.map(c=>(
+                    <tr key={c}>
+                      <td style={{padding:"8px",fontWeight:600,fontSize:13,whiteSpace:"nowrap"}}>
+                        <span style={{background:COLOR[c],color:"#fff",borderRadius:6,padding:"3px 8px",fontSize:12}}>{EMOJI[c]} {c}</span>
+                      </td>
+                      {DIAS.map(d=><SlotCell key={d} dia={d} comida={c} menu={s.menu} dispatch={dispatch}/>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ── RECETAS ── */}
+        {s.tab==="recetas" && (
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+            <div style={{background:"#fff",borderRadius:12,padding:20,boxShadow:"0 1px 4px #0001"}}>
+              <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>➕ Nueva receta</div>
+              <label style={lbl}>Nombre</label>
+              <input value={s.recetaForm.nombre} onChange={e=>dispatch({type:"RF",data:{nombre:e.target.value}})} style={inp} placeholder="Ej: Pollo al horno"/>
+              <label style={lbl}>Tipo de comida</label>
+              <select value={s.recetaForm.tipo} onChange={e=>dispatch({type:"RF",data:{tipo:e.target.value}})} style={inp}>
+                {TIPOS_RECETA.map(c=><option key={c}>{c}</option>)}
+              </select>
+              <label style={lbl}>Categoría nutricional</label>
+              <select value={s.recetaForm.categoria} onChange={e=>dispatch({type:"RF",data:{categoria:e.target.value}})} style={inp}>
+                {CATEGORIAS.map(c=><option key={c}>{c}</option>)}
+              </select>
+              <label style={lbl}>Calorías aprox.</label>
+              <input value={s.recetaForm.calorias} onChange={e=>dispatch({type:"RF",data:{calorias:e.target.value}})} style={inp} placeholder="Ej: 450 kcal"/>
+              <label style={lbl}>Ingredientes</label>
+              <div style={{display:"flex",gap:8,marginBottom:8}}>
+                <input value={s.ingInput} onChange={e=>dispatch({type:"ING_IN",val:e.target.value})}
+                  onKeyDown={e=>e.key==="Enter"&&dispatch({type:"ADD_ING"})}
+                  style={{...inp,flex:1,marginBottom:0}} placeholder="Añadir ingrediente..."/>
+                <button onClick={()=>dispatch({type:"ADD_ING"})}
+                  style={{background:"#3b82f6",color:"#fff",border:"none",borderRadius:8,padding:"0 14px",cursor:"pointer",fontWeight:700}}>+</button>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+                {s.recetaForm.ingredientes.map((ing,i)=>(
+                  <span key={i} style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:20,padding:"3px 10px",fontSize:12,display:"flex",alignItems:"center",gap:5}}>
+                    {ing} <span onClick={()=>dispatch({type:"DEL_ING",idx:i})} style={{cursor:"pointer",color:"#ef4444"}}>×</span>
+                  </span>
+                ))}
+              </div>
+              <button onClick={()=>dispatch({type:"SAVE_R"})}
+                style={{width:"100%",background:u.color,color:"#fff",border:"none",padding:"11px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:15}}>
+                {u.emoji} Guardar como {u.nombre}
+              </button>
+            </div>
+
+            <div style={{background:"#fff",borderRadius:12,padding:20,boxShadow:"0 1px 4px #0001",maxHeight:520,overflowY:"auto"}}>
+              <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>📋 Todas las recetas ({s.recetas.length})</div>
+              {s.recetas.length===0 && <div style={{color:"#94a3b8",textAlign:"center",marginTop:40}}>Aún no hay recetas guardadas.</div>}
+              {s.recetas.map(r=>{
+                const autor = USUARIOS.find(uu=>uu.id===r.autor);
+                return (
+                  <div key={r.id} style={{border:"1px solid #e2e8f0",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div>
+                        <div style={{fontWeight:700}}>{r.nombre}</div>
+                        <div style={{fontSize:12,color:"#64748b",marginTop:2}}>
+                          <span style={{background:COLOR[r.tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 7px",marginRight:6,fontSize:11}}>{EMOJI[r.tipo]||"🍴"} {r.tipo}</span>
+                          {r.categoria}{r.calorias&&` • ${r.calorias}`}
+                          {autor&&<span style={{marginLeft:6,color:autor.color,fontWeight:600}}>{autor.emoji} {autor.nombre}</span>}
+                        </div>
+                      </div>
+                      <button onClick={()=>dispatch({type:"DEL_R",id:r.id})}
+                        style={{background:"none",border:"none",color:"#ef4444",cursor:"pointer",fontSize:18}}>🗑</button>
+                    </div>
+                    {r.ingredientes.length>0&&(
+                      <div style={{marginTop:8,display:"flex",flexWrap:"wrap",gap:5}}>
+                        {r.ingredientes.map((ing,i)=><span key={i} style={{background:"#f1f5f9",borderRadius:20,padding:"2px 9px",fontSize:11}}>{ing}</span>)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── COMPRA ── */}
+        {s.tab==="compra" && (
+          <div style={{maxWidth:520}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontWeight:700,fontSize:18}}>🛒 Lista de la compra</div>
+              <button onClick={()=>dispatch({type:"GEN_COMPRA"})}
+                style={{background:"#3b82f6",color:"#fff",border:"none",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontWeight:600}}>🔄 Actualizar</button>
+            </div>
+            {s.compra.length===0
+              ? <div style={{color:"#94a3b8",textAlign:"center",marginTop:60}}><div style={{fontSize:48}}>🛒</div><div>Planifica tu menú y pulsa "Generar Lista de Compra"</div></div>
+              : <div>
+                  <div style={{color:"#64748b",fontSize:13,marginBottom:10}}>{s.compra.filter(c=>c.checked).length}/{s.compra.length} artículos marcados</div>
+                  {s.compra.map((c,i)=>(
+                    <div key={i} onClick={()=>dispatch({type:"TOGGLE_C",idx:i})}
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:"#fff",
+                        border:"1px solid #e2e8f0",borderRadius:10,marginBottom:8,cursor:"pointer",opacity:c.checked?.5:1,transition:"opacity .2s"}}>
+                      <div style={{width:22,height:22,borderRadius:6,border:c.checked?"none":"2px solid #cbd5e1",
+                        background:c.checked?u.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                        {c.checked&&<span style={{color:"#fff",fontSize:14}}>✓</span>}
+                      </div>
+                      <span style={{flex:1,textDecoration:c.checked?"line-through":"none",fontWeight:500}}>{c.ing}</span>
+                      {c.n>1&&<span style={{background:"#eff6ff",color:"#3b82f6",borderRadius:20,padding:"1px 9px",fontSize:12,fontWeight:700}}>×{c.n}</span>}
+                    </div>
+                  ))}
+                </div>
+            }
+          </div>
+        )}
+
+        {/* ── IA ── */}
+        {s.tab==="ia" && (
+          <div style={{maxWidth:620}}>
+            <div style={{fontWeight:700,fontSize:18,marginBottom:10}}>✨ Sugerencia de menú con IA</div>
+            {s.aiLoading&&<div style={{textAlign:"center",padding:60}}><div style={{fontSize:40,marginBottom:16}}>🤖</div><div style={{color:"#64748b"}}>Planificando menú familiar equilibrado...</div></div>}
+            {!s.aiLoading&&s.aiSugerencia&&(()=>{
+              let items=[]; try{items=JSON.parse(s.aiSugerencia);}catch{}
+              return (
+                <div>
+                  <div style={{color:"#64748b",marginBottom:16}}>Sugerencia para esta semana:</div>
+                  {DIAS.map(dia=>(
+                    <div key={dia} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,padding:"12px 16px",marginBottom:10}}>
+                      <div style={{fontWeight:700,marginBottom:8}}>📅 {dia}</div>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                        {items.filter(it=>it.dia===dia).map((it,i)=>(
+                          <span key={i} style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:8,padding:"4px 12px",fontSize:13}}>
+                            <span style={{background:COLOR[it.comida]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 6px",fontSize:11,marginRight:6}}>{EMOJI[it.comida]||"🍴"} {it.comida}</span>
+                            {it.receta}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={()=>dispatch({type:"APPLY_AI",text:s.aiSugerencia})}
+                    style={{marginTop:8,background:"linear-gradient(135deg,#8b5cf6,#3b82f6)",color:"#fff",border:"none",
+                      padding:"12px 24px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15,width:"100%"}}>
+                    ✅ Aplicar este menú a la semana
+                  </button>
+                </div>
+              );
+            })()}
+            {!s.aiLoading&&!s.aiSugerencia&&(
+              <div style={{textAlign:"center",padding:60}}>
+                <div style={{fontSize:48,marginBottom:16}}>✨</div>
+                <div style={{color:"#64748b",marginBottom:20}}>Añade tus recetas y deja que la IA organice la semana familiar.</div>
+                <button onClick={genAI}
+                  style={{background:"linear-gradient(135deg,#8b5cf6,#ec4899)",color:"#fff",border:"none",
+                    padding:"12px 28px",borderRadius:10,cursor:"pointer",fontWeight:700,fontSize:15}}>
+                  ✨ Sugerir menú con IA
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal selección receta */}
+      {s.modalOpen&&(
+        <div style={{position:"fixed",inset:0,background:"#0006",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100}}
+          onClick={()=>dispatch({type:"CLOSE_MODAL"})}>
+          <div style={{background:"#fff",borderRadius:14,padding:24,minWidth:320,maxWidth:420,maxHeight:"80vh",overflowY:"auto"}}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{fontWeight:700,fontSize:17,marginBottom:4}}>{EMOJI[s.modalSlot?.comida]} {s.modalSlot?.dia} — {s.modalSlot?.comida}</div>
+            <div style={{color:"#64748b",fontSize:13,marginBottom:16}}>Recetas de este tipo aparecen primero.</div>
+            {s.recetas.length===0&&<div style={{color:"#94a3b8"}}>Ve a Recetas para añadir platos.</div>}
+            {[...s.recetas].sort((a,b)=>a.tipo===s.modalSlot?.comida?-1:1).map(r=>{
+              const autor=USUARIOS.find(uu=>uu.id===r.autor);
+              return (
+                <div key={r.id} onClick={()=>dispatch({type:"ASSIGN",dia:s.modalSlot.dia,comida:s.modalSlot.comida,receta:r})}
+                  style={{border:"1px solid #e2e8f0",borderRadius:10,padding:"10px 14px",marginBottom:8,cursor:"pointer",
+                    background:r.tipo===s.modalSlot?.comida?"#eff6ff":"#fafafa"}}>
+                  <div style={{fontWeight:600}}>{r.nombre}</div>
+                  <div style={{fontSize:12,color:"#64748b"}}>
+                    <span style={{background:COLOR[r.tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 7px",marginRight:6,fontSize:11}}>{EMOJI[r.tipo]||"🍴"} {r.tipo}</span>
+                    {r.categoria}{r.calorias&&` • ${r.calorias}`}
+                    {autor&&<span style={{marginLeft:6,color:autor.color}}>{autor.emoji}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
