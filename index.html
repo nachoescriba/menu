@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,9 +33,14 @@ const FILAS = [["A","Almuerzo","#10b981"],["C","Comida","#3b82f6"],["M","Meriend
 const COLOR = { Almuerzo:"#10b981",Comida:"#3b82f6",Merienda:"#a78bfa","Cena Niños":"#f59e0b","Cena Padres":"#f87171" };
 const EMOJI  = { Almuerzo:"🥗",Comida:"🍽️",Merienda:"🍎","Cena Niños":"👶","Cena Padres":"🍷" };
 
-const BATMAN_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#0a0a0f"/><ellipse cx="120" cy="195" rx="68" ry="55" fill="#2a2a3a"/><path d="M95 183 Q105 173 120 177 Q135 173 145 183 Q138 189 130 185 Q125 193 120 191 Q115 193 110 185 Q102 189 95 183Z" fill="#1a1a1a"/><ellipse cx="105" cy="180" rx="8" ry="5" fill="#1a1a1a"/><ellipse cx="135" cy="180" rx="8" ry="5" fill="#1a1a1a"/><rect x="110" y="152" width="20" height="18" rx="4" fill="#b0a090"/><ellipse cx="120" cy="133" rx="32" ry="34" fill="#b0a090"/><path d="M90 127 Q92 105 120 103 Q148 105 150 127 Q148 123 142 121 Q136 115 130 119 Q125 113 120 113 Q115 113 110 119 Q104 115 98 121 Q92 123 90 127Z" fill="#111"/><polygon points="98,113 88,83 108,105" fill="#111"/><polygon points="142,113 152,83 132,105" fill="#111"/><ellipse cx="108" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="132" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="108" cy="125" rx="5" ry="4" fill="#ddd"/><ellipse cx="132" cy="125" rx="5" ry="4" fill="#ddd"/><path d="M118 135 Q120 139 122 135" fill="none" stroke="#8a7060" stroke-width="1.5"/><path d="M110 143 Q115 140 120 142 Q125 140 130 143" fill="none" stroke="#8a7060" stroke-width="2" stroke-linecap="round"/><path d="M98 130 Q98 145 120 151 Q142 145 142 130" fill="#b0a090"/><path d="M52 240 Q70 205 98 175 Q100 205 105 235Z" fill="#1c1c2e"/><path d="M188 240 Q170 205 142 175 Q140 205 135 235Z" fill="#1c1c2e"/></svg>`)}`;
+// ── Foto de fondo pantalla inicio ──────────────────────────────────────────
+// Sube tu foto al repo como "fondo.jpg" y esta línea la carga automáticamente
+const FOOD_IMG = "./fondo.jpg";
 
-const WW_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#1a0a0a"/><ellipse cx="120" cy="197" rx="65" ry="52" fill="#8b1a1a"/><path d="M95 175 Q120 165 145 175 L140 200 Q120 193 100 200Z" fill="#c8960c"/><rect x="110" y="152" width="20" height="16" rx="3" fill="#d4a574"/><ellipse cx="120" cy="132" rx="31" ry="33" fill="#d4a574"/><path d="M90 120 Q88 145 92 185 Q100 175 102 155 Q104 135 102 120Z" fill="#1a0a00"/><path d="M150 120 Q152 145 148 185 Q140 175 138 155 Q136 135 138 120Z" fill="#1a0a00"/><ellipse cx="120" cy="108" rx="32" ry="14" fill="#1a0a00"/><path d="M92 117 Q120 110 148 117 Q140 121 120 119 Q100 121 92 117Z" fill="#c8960c"/><ellipse cx="108" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="132" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="108" cy="125" rx="4" ry="3" fill="#1a0a00"/><ellipse cx="132" cy="125" rx="4" ry="3" fill="#1a0a00"/><circle cx="110" cy="123" r="1.5" fill="white"/><circle cx="134" cy="123" r="1.5" fill="white"/><path d="M101 119 Q108 116 115 118" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M125 118 Q132 116 139 119" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M118 132 Q120 136 122 132" fill="none" stroke="#b8845a" stroke-width="1.2"/><path d="M110 141 Q115 137 120 139 Q125 137 130 141 Q125 145 120 143 Q115 145 110 141Z" fill="#cc2200"/><path d="M78 180 Q90 170 100 180 Q92 187 80 185Z" fill="#c8960c"/><path d="M162 180 Q150 170 140 180 Q148 187 160 185Z" fill="#c8960c"/></svg>`)}`;
+// ── Avatares SVG ──────────────────────────────────────────────────────────
+const BATMAN_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#0a0a0f"/><ellipse cx="120" cy="195" rx="68" ry="55" fill="#2a2a3a"/><path d="M95 183 Q105 173 120 177 Q135 173 145 183 Q138 189 130 185 Q125 193 120 191 Q115 193 110 185 Q102 189 95 183Z" fill="#1a1a1a"/><ellipse cx="105" cy="180" rx="8" ry="5" fill="#1a1a1a"/><ellipse cx="135" cy="180" rx="8" ry="5" fill="#1a1a1a"/><rect x="110" y="152" width="20" height="18" rx="4" fill="#b0a090"/><ellipse cx="120" cy="133" rx="32" ry="34" fill="#b0a090"/><path d="M90 127 Q92 105 120 103 Q148 105 150 127 Q148 123 142 121 Q136 115 130 119 Q125 113 120 113 Q115 113 110 119 Q104 115 98 121 Q92 123 90 127Z" fill="#111"/><polygon points="98,113 88,83 108,105" fill="#111"/><polygon points="142,113 152,83 132,105" fill="#111"/><ellipse cx="108" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="132" cy="125" rx="9" ry="6" fill="white"/><ellipse cx="108" cy="125" rx="5" ry="4" fill="#ddd"/><ellipse cx="132" cy="125" rx="5" ry="4" fill="#ddd"/><path d="M118 135 Q120 139 122 135" fill="none" stroke="#8a7060" stroke-width="1.5"/><path d="M110 143 Q115 140 120 142 Q125 140 130 143" fill="none" stroke="#8a7060" stroke-width="2" stroke-linecap="round"/><path d="M98 130 Q98 145 120 151 Q142 145 142 130" fill="#b0a090"/><path d="M52 240 Q70 205 98 175 Q100 205 105 235Z" fill="#1c1c2e"/><path d="M188 240 Q170 205 142 175 Q140 205 135 235Z" fill="#1c1c2e"/></svg>')}`;
+
+const WW_SVG = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><circle cx="120" cy="120" r="120" fill="#1a0a0a"/><ellipse cx="120" cy="197" rx="65" ry="52" fill="#8b1a1a"/><path d="M95 175 Q120 165 145 175 L140 200 Q120 193 100 200Z" fill="#c8960c"/><rect x="110" y="152" width="20" height="16" rx="3" fill="#d4a574"/><ellipse cx="120" cy="132" rx="31" ry="33" fill="#d4a574"/><path d="M90 120 Q88 145 92 185 Q100 175 102 155 Q104 135 102 120Z" fill="#1a0a00"/><path d="M150 120 Q152 145 148 185 Q140 175 138 155 Q136 135 138 120Z" fill="#1a0a00"/><ellipse cx="120" cy="108" rx="32" ry="14" fill="#1a0a00"/><path d="M92 117 Q120 110 148 117 Q140 121 120 119 Q100 121 92 117Z" fill="#c8960c"/><ellipse cx="108" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="132" cy="125" rx="7" ry="5" fill="#2a1a0a"/><ellipse cx="108" cy="125" rx="4" ry="3" fill="#1a0a00"/><ellipse cx="132" cy="125" rx="4" ry="3" fill="#1a0a00"/><circle cx="110" cy="123" r="1.5" fill="white"/><circle cx="134" cy="123" r="1.5" fill="white"/><path d="M101 119 Q108 116 115 118" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M125 118 Q132 116 139 119" fill="none" stroke="#1a0a00" stroke-width="2" stroke-linecap="round"/><path d="M118 132 Q120 136 122 132" fill="none" stroke="#b8845a" stroke-width="1.2"/><path d="M110 141 Q115 137 120 139 Q125 137 130 141 Q125 145 120 143 Q115 145 110 141Z" fill="#cc2200"/><path d="M78 180 Q90 170 100 180 Q92 187 80 185Z" fill="#c8960c"/><path d="M162 180 Q150 170 140 180 Q148 187 160 185Z" fill="#c8960c"/></svg>')}`;
 
 const USUARIOS = [
   { id:"nacho", nombre:"Nacho", avatar:BATMAN_SVG, color:"#3b82f6" },
@@ -122,13 +128,11 @@ function reducer(s,a) {
 function Tag({tipo}) {
   return React.createElement("span",{style:{background:COLOR[tipo]||"#94a3b8",color:"#fff",borderRadius:4,padding:"1px 6px",fontSize:10,marginRight:5}},`${EMOJI[tipo]||"🍴"} ${tipo}`);
 }
-
 function Checkbox({checked,onChange,color="#3b82f6"}) {
   return React.createElement("div",{onClick:onChange,style:{width:20,height:20,borderRadius:5,border:checked?"none":"2px solid #cbd5e1",
-    background:checked?color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,transition:"all .15s"}},
+    background:checked?color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}},
     checked&&React.createElement("span",{style:{color:"#fff",fontSize:13,lineHeight:1}},"✓"));
 }
-
 function Avatar({src,size=28,color}) {
   return React.createElement("img",{src,style:{width:size,height:size,borderRadius:"50%",border:`2px solid ${color||"rgba(255,255,255,0.5)"}`,objectFit:"cover",flexShrink:0}});
 }
@@ -171,33 +175,34 @@ function App() {
   const lbl={display:"block",fontSize:13,fontWeight:600,color:"#475569",marginBottom:4};
   const inp={width:"100%",border:"1px solid #e2e8f0",borderRadius:8,padding:"9px 12px",fontSize:14,marginBottom:12,outline:"none"};
 
-  // Pantalla selección usuario
+  // ── Pantalla inicio con foto de fondo ──────────────────────────────────
   if(!u) return (
-    <div style={{fontFamily:"system-ui,sans-serif",minHeight:"100dvh",background:"linear-gradient(135deg,#eff6ff,#fdf4ff)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"#fff",borderRadius:20,padding:"36px 28px",boxShadow:"0 8px 32px #0002",textAlign:"center",maxWidth:340,width:"100%"}}>
-        <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:12}}>
-          {USUARIOS.map(uu=><Avatar key={uu.id} src={uu.avatar} size={60} color={uu.color}/>)}
-        </div>
-        <div style={{fontSize:24,fontWeight:700,marginBottom:4}}>🥘 miMenú Familiar</div>
-        <div style={{color:"#64748b",fontSize:14,marginBottom:28}}>¿Quién eres?</div>
-        <div style={{display:"flex",gap:14,justifyContent:"center"}}>
+    <div style={{fontFamily:"system-ui,sans-serif",height:"100dvh",position:"relative",overflow:"hidden"}}>
+      <img src={FOOD_IMG} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}}/>
+      <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.5) 50%,rgba(0,0,0,0.85) 100%)"}}/>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",padding:"0 28px 60px"}}>
+        <div style={{fontSize:38,marginBottom:8}}>🥘</div>
+        <div style={{fontSize:28,fontWeight:800,color:"#fff",marginBottom:6,letterSpacing:-0.5}}>miMenú Familiar</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,0.75)",marginBottom:36}}>¿Quién entra hoy?</div>
+        <div style={{display:"flex",gap:16,width:"100%",maxWidth:320}}>
           {USUARIOS.map(uu=>(
             <button key={uu.id} onClick={()=>dispatch({type:"SET_USER",val:uu})}
-              style={{flex:1,padding:"20px 12px",borderRadius:16,border:`2px solid ${uu.color}40`,background:`${uu.color}08`,cursor:"pointer"}}>
-              <img src={uu.avatar} style={{width:72,height:72,borderRadius:"50%",border:`3px solid ${uu.color}`,display:"block",margin:"0 auto 10px",objectFit:"cover"}}/>
-              <div style={{fontWeight:700,color:uu.color,fontSize:16}}>{uu.nombre}</div>
+              style={{flex:1,padding:"16px 12px",borderRadius:18,border:`2px solid ${uu.color}`,
+                background:"rgba(0,0,0,0.45)",cursor:"pointer",
+                display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+              <img src={uu.avatar} style={{width:64,height:64,borderRadius:"50%",border:`3px solid ${uu.color}`,objectFit:"cover"}}/>
+              <span style={{fontWeight:700,color:"#fff",fontSize:16}}>{uu.nombre}</span>
             </button>
           ))}
         </div>
-        <div style={{marginTop:20,fontSize:12,color:"#94a3b8"}}>💾 Datos guardados en este dispositivo</div>
       </div>
     </div>
   );
 
+  // ── App principal ──────────────────────────────────────────────────────
   return (
     <div style={{fontFamily:"system-ui,sans-serif",background:"#f8fafc",height:"100dvh",display:"flex",flexDirection:"column",overflow:"hidden",color:"#1e293b"}}>
 
-      {/* Header */}
       <div style={{background:`linear-gradient(135deg,${u.color},#8b5cf6)`,padding:"10px 14px",color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
         <div>
           <div style={{fontSize:17,fontWeight:700}}>🥘 miMenú Familiar</div>
@@ -213,7 +218,6 @@ function App() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{display:"flex",background:"#fff",borderBottom:"2px solid #e2e8f0",flexShrink:0}}>
         {[["menu","📅","Menú"],["recetas","🍴","Recetas"],["compra","🛒","Compra"],["ia","✨","IA"]].map(([k,em,nm])=>(
           <button key={k} onClick={()=>dispatch({type:"TAB",tab:k})}
@@ -225,10 +229,8 @@ function App() {
         ))}
       </div>
 
-      {/* Scroll */}
       <div style={{flex:1,overflowY:"auto",padding:"10px 12px",WebkitOverflowScrolling:"touch"}}>
 
-        {/* ── MENÚ ── */}
         {s.tab==="menu" && (
           <div>
             <div style={{display:"flex",gap:8,marginBottom:10}}>
@@ -242,7 +244,6 @@ function App() {
               </button>
             </div>
             <div style={{background:"#fff",borderRadius:14,boxShadow:"0 1px 4px #0001",overflow:"hidden"}}>
-              {/* Cabecera días */}
               <div style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:`linear-gradient(135deg,${u.color},#8b5cf6)`}}>
                 <div style={{padding:"8px 4px"}}/>
                 {DIAS_SHORT.map(([sh,full])=>{
@@ -255,7 +256,6 @@ function App() {
                   );
                 })}
               </div>
-              {/* Filas */}
               {FILAS.map(([short,comida,color],rowIdx)=>(
                 <div key={comida} style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:rowIdx%2===0?"#fafafa":"#fff",borderTop:"1px solid #f1f5f9"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"4px 2px",borderRight:"2px solid #f1f5f9"}}>
@@ -283,10 +283,9 @@ function App() {
                   })}
                 </div>
               ))}
-              {/* Toggle cenas iguales */}
               <div style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",background:"#f8fafc",borderTop:"2px solid #e2e8f0"}}>
                 <div style={{padding:"5px 2px",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:8,color:"#94a3b8",textAlign:"center",lineHeight:1.2}}>Ce=</span>
+                  <span style={{fontSize:8,color:"#94a3b8",textAlign:"center"}}>Ce=</span>
                 </div>
                 {DIAS.map(dia=>(
                   <div key={dia} style={{padding:"5px 4px",borderLeft:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
@@ -296,7 +295,6 @@ function App() {
                 ))}
               </div>
             </div>
-            {/* Leyenda */}
             <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10}}>
               {FILAS.map(([sh,l,c])=>(
                 <span key={sh} style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#64748b"}}>
@@ -307,7 +305,6 @@ function App() {
           </div>
         )}
 
-        {/* ── RECETAS ── */}
         {s.tab==="recetas" && (
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div style={{background:"#fff",borderRadius:12,padding:16,boxShadow:"0 1px 4px #0001"}}>
@@ -381,7 +378,6 @@ function App() {
           </div>
         )}
 
-        {/* ── COMPRA ── */}
         {s.tab==="compra" && (
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -405,7 +401,6 @@ function App() {
           </div>
         )}
 
-        {/* ── IA ── */}
         {s.tab==="ia" && (
           <div>
             <div style={{fontWeight:700,fontSize:17,marginBottom:6}}>✨ Rellenar huecos con IA</div>
@@ -455,7 +450,6 @@ function App() {
         )}
       </div>
 
-      {/* Modal bottom sheet */}
       {s.modalOpen&&(
         <div style={{position:"fixed",inset:0,background:"#0007",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100}}
           onClick={()=>dispatch({type:"CLOSE_MODAL"})}>
@@ -490,4 +484,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 </body>
 </html>
-}
